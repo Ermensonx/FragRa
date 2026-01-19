@@ -237,12 +237,11 @@ setup_firewall() {
     # Allow ports
     ufw allow 22/tcp >/dev/null 2>&1 || true   # SSH
     ufw allow 80/tcp >/dev/null 2>&1 || true   # HTTP
-    ufw allow 443/tcp >/dev/null 2>&1 || true  # HTTPS
 
     # Enable
     ufw --force enable >/dev/null 2>&1 || true
 
-    log "Firewall configurado (SSH, HTTP, HTTPS)"
+    log "Firewall configurado (SSH, HTTP)"
 }
 
 # ============================================================================
@@ -676,25 +675,25 @@ main() {
     show_banner
     preflight
 
-    info "[1/9] Configurando sistema..."
+    info "[1/10] Configurando sistema..."
     configure_system
 
-    info "[2/9] Configurando DNS local..."
+    info "[2/10] Configurando DNS local..."
     configure_hosts
 
-    info "[3/9] Instalando dependências..."
+    info "[3/10] Instalando dependências..."
     install_dependencies
 
-    info "[4/9] Instalando Docker..."
+    info "[4/10] Instalando Docker..."
     install_docker
 
-    info "[5/9] Configurando usuários..."
+    info "[5/10] Configurando usuários..."
     setup_users
 
-    info "[6/9] Configurando flags..."
+    info "[6/10] Configurando flags..."
     setup_flags
 
-    info "[7/9] Configurando firewall..."
+    info "[7/10] Configurando firewall..."
     setup_firewall
 
     info "[8/10] Deploy do CTF..."
