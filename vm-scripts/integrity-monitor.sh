@@ -110,11 +110,13 @@ check_container_health() {
 
 check_waf_responding() {
     # Check if WAF is responding on port 80
-    if curl -s --max-time 5 -o /dev/null -w "%{http_code}" http://127.0.0.1/ | grep -qE "^[23]"; then
-        log_ok "WAF responding on port 80"
+    local http_code
+    http_code=$(curl -s --max-time 5 -o /dev/null -w "%{http_code}" http://localhost/health 2>/dev/null || echo "000")
+    if [[ "$http_code" == "200" ]]; then
+        log_ok "WAF responding on port 80 (HTTP $http_code)"
         return 0
     else
-        log_warn "WAF not responding on port 80"
+        log_warn "WAF not responding on port 80 (HTTP $http_code)"
         return 1
     fi
 }
@@ -123,7 +125,7 @@ check_internal_services() {
     local issues=0
     
     # Check if internal-api is reachable from nextjs container
-    if docker exec CloudFragment-nextjs-app-1 sh -c "wget -q -O- http://internal-api:8080/ >/dev/null 2>&1" 2>/dev/null; then
+    if docker exec CloudFragment-app sh -c "wget -q -O- http://internal-api:8080/ >/dev/null 2>&1" 2>/dev/null; then
         log_ok "internal-api reachable"
     else
         log_warn "internal-api not reachable from nextjs"
@@ -131,7 +133,7 @@ check_internal_services() {
     fi
     
     # Check if secrets-vault is reachable
-    if docker exec CloudFragment-nextjs-app-1 sh -c "wget -q --no-check-certificate -O- https://secrets-vault:443/ >/dev/null 2>&1" 2>/dev/null; then
+    if docker exec CloudFragment-app sh -c "wget -q --no-check-certificate -O- https://secrets-vault:443/ >/dev/null 2>&1" 2>/dev/null; then
         log_ok "secrets-vault reachable"
     else
         log_warn "secrets-vault not reachable from nextjs"
