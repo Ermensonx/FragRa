@@ -1,0 +1,17 @@
+[Unit]
+Description=Cloud Fragment CTF Container Watchdog
+After=docker.service
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/opt/CloudFragment/vm-scripts/watchdog.sh
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+Environment="CTF_DIR=/opt/CloudFragment"
+
+[Install]
+WantedBy=multi-user.target
