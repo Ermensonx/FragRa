@@ -135,8 +135,15 @@ deploy_containers() {
 
     cd "$CTF_DIR"
 
-    # Stop existing containers
-    docker compose down 2>/dev/null || true
+    # Stop and remove existing containers (force cleanup)
+    log "Limpando containers antigos..."
+    docker compose down -v 2>/dev/null || true
+    
+    # Force remove any orphaned CloudFragment containers
+    docker rm -f CloudFragment-edge CloudFragment-proxy CloudFragment-app CloudFragment-metadata CloudFragment-secrets CloudFragment-dns 2>/dev/null || true
+    
+    # Remove any containers matching the pattern
+    docker ps -a --filter "name=CloudFragment" --format "{{.ID}}" | xargs -r docker rm -f 2>/dev/null || true
 
     # Build images
     log "Construindo imagens Docker (pode demorar alguns minutos)..."
