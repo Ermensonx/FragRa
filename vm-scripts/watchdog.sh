@@ -103,8 +103,9 @@ force_recreate_container() {
 
 # Check WAF is responding
 check_waf_health() {
+    # Check from inside the container (localhost works inside the container)
     local http_code
-    http_code=$(curl -s --max-time 3 -o /dev/null -w "%{http_code}" http://localhost/health 2>/dev/null || echo "000")
+    http_code=$(docker exec CloudFragment-edge curl -s --max-time 3 -o /dev/null -w "%{http_code}" http://localhost/health 2>/dev/null || echo "000")
     [[ "$http_code" == "200" ]]
 }
 
