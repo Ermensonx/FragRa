@@ -189,7 +189,7 @@ else
 fi
 
 # Health check
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/health 2>/dev/null || echo "000")
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://72.60.148.4/health 2>/dev/null || echo "000")
 if [[ "$HTTP_CODE" == "200" ]]; then
     pass "WAF health endpoint: HTTP $HTTP_CODE"
 else

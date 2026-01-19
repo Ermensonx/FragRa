@@ -8,7 +8,7 @@ const nextConfig = {
     // Enable experimental features that make RSC work
     experimental: {
         serverActions: {
-            allowedOrigins: ['*', 'localhost:8080', 'localhost:3000', '127.0.0.1:8080', '127.0.0.1:3000', '0.0.0.0:8080', '0.0.0.0:3000'],
+            allowedOrigins: ['*', '72.60.148.4:8080', '72.60.148.4:3000', '72.60.148.4:80', '127.0.0.1:8080', '127.0.0.1:3000', '0.0.0.0:8080', '0.0.0.0:3000'],
             bodySizeLimit: '10mb',
         },
     },

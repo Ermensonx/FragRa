@@ -372,7 +372,7 @@ if [[ "$RUNNING" -lt 5 ]]; then
 fi
 
 # Check web accessibility
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/health 2>/dev/null || echo "000")
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://72.60.148.4:80/health 2>/dev/null || echo "000")
 if [[ "$HTTP_CODE" != "200" ]]; then
     echo "[WARNING] WAF health check failed (HTTP $HTTP_CODE)"
 fi
@@ -526,7 +526,7 @@ echo ""
 
 # Network Check
 echo -e "${YELLOW}[Network]${NC}"
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/health 2>/dev/null || echo "000")
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://72.60.148.4:80/health 2>/dev/null || echo "000")
 if [[ "$HTTP_CODE" == "200" ]]; then
     echo -e "  WAF Health: ${GREEN}OK (HTTP 200)${NC}"
 else

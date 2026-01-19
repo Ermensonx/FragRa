@@ -387,7 +387,7 @@ echo "=== Status Cloud Fragment ==="
 echo ""
 docker compose ps
 echo ""
-echo "Health: $(curl -s http://localhost/health 2>/dev/null || echo 'OFFLINE')"
+echo "Health: $(curl -s http://72.60.148.4/health 2>/dev/null || echo 'OFFLINE')"
 STATUS
     chmod +x "$CTF_DIR/status.sh"
 
@@ -415,9 +415,9 @@ verify_setup() {
     sleep 3
     HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://72.60.148.4:80/health 2>/dev/null || echo "000")
     if [[ "$HTTP_CODE" == "200" ]]; then
-        echo -e "  HTTP localhost:    ${GREEN}OK (200)${NC}"
+        echo -e "  HTTP 72.60.148.4:    ${GREEN}OK (200)${NC}"
     else
-        echo -e "  HTTP localhost:    ${YELLOW}HTTP $HTTP_CODE${NC}"
+        echo -e "  HTTP 72.60.148.4:    ${YELLOW}HTTP $HTTP_CODE${NC}"
     fi
 
     # Test domain
