@@ -413,7 +413,7 @@ verify_setup() {
 
     # Test WAF health
     sleep 3
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/health 2>/dev/null || echo "000")
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://72.60.148.4:80/health 2>/dev/null || echo "000")
     if [[ "$HTTP_CODE" == "200" ]]; then
         echo -e "  HTTP localhost:    ${GREEN}OK (200)${NC}"
     else
@@ -440,7 +440,7 @@ show_final() {
 ║                                                                   ║
 ║  🌐 Acesse no navegador:                                          ║
 ║     → http://cloudfragment.htb                                    ║
-║     → http://localhost                                            ║
+║     → http://72.60.148.4                                          ║
 ║                                                                   ║
 ║  📁 Arquivos:                                                     ║
 ║     → CTF: /opt/CloudFragment                                    ║
@@ -573,7 +573,7 @@ show_status() {
     echo ""
 
     echo -e "${YELLOW}[Conectividade]${NC}"
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/health 2>/dev/null || echo "000")
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://72.60.148.4:80/health 2>/dev/null || echo "000")
     if [[ "$HTTP_CODE" == "200" ]]; then
         echo -e "  WAF: ${GREEN}OK${NC}"
     else

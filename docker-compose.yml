@@ -30,7 +30,7 @@ services:
     build: ./edge-waf
     container_name: CloudFragment-edge
     ports:
-      - "80:80"
+      - "72.60.148.4:80:80"
     volumes:
       - ./edge-waf/certs:/etc/nginx/certs:ro
     networks:
