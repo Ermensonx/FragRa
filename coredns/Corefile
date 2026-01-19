@@ -1,0 +1,14 @@
+. {
+    # Resolve internal service names via Docker DNS
+    hosts {
+        # Docker will handle resolution via container names
+        fallthrough
+    }
+
+    # Forward to Docker's embedded DNS
+    forward . 127.0.0.11
+
+    # Log queries for debugging
+    log
+    errors
+}

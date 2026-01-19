@@ -1,0 +1,6 @@
+# Ops Console Sitemap
+User-agent: *
+Disallow: /api/admin
+Disallow: /api/internal
+
+#Use our private chat. I put the hidden path in the usual place: qnfuobneq

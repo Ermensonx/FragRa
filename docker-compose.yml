@@ -1,0 +1,131 @@
+# ============================================================================
+# CLOUD FORTRESS - React2Shell CTF Challenge
+# Based on CVE-2025-55182 / CVE-2025-66478
+# ============================================================================
+
+networks:
+  # Public-facing edge network
+  edge_net:
+    driver: bridge
+
+  # DMZ between edge and app
+  dmz_net:
+    driver: bridge
+
+  # Application network (internal only)
+  app_net:
+    driver: bridge
+    internal: true
+
+  # Backend services network (highly restricted)
+  internal_net:
+    driver: bridge
+    internal: true
+
+services:
+  # ============================================================================
+  # EDGE WAF - Cloudflare-like behavior
+  # ============================================================================
+  edge-waf:
+    build: ./edge-waf
+    container_name: CloudFragment-edge
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./edge-waf/certs:/etc/nginx/certs:ro
+    networks:
+      - edge_net
+      - dmz_net
+    environment:
+      - WAF_BLOCK_ROOT=true
+      - WAF_SIZE_THRESHOLD=100000
+      - RATE_LIMIT_PER_MIN=30
+      - UPSTREAM_HOST=nginx-proxy
+      - UPSTREAM_PORT=8080
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================================================
+  # NGINX REVERSE PROXY
+  # ============================================================================
+  nginx-proxy:
+    build: ./nginx-proxy
+    container_name: CloudFragment-proxy
+    networks:
+      - dmz_net
+      - app_net
+    depends_on:
+      - nextjs-app
+    restart: unless-stopped
+
+  # ============================================================================
+  # VULNERABLE NEXT.JS APPLICATION
+  # ============================================================================
+  nextjs-app:
+    build: ./vulnerable-nextjs
+    container_name: CloudFragment-app
+    read_only: true
+    user: "1000:1000"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=50M,mode=1777,exec
+      - /app/.next/cache:size=50M,mode=1777
+    networks:
+      - app_net
+      - internal_net
+    volumes:
+      - ./sa-token:/run/secrets/kubernetes.io/serviceaccount:ro
+    environment:
+      - NODE_ENV=production
+      - HOSTNAME=0.0.0.0
+    restart: unless-stopped
+
+  # ============================================================================
+  # INTERNAL METADATA API (holds USER flag)
+  # ============================================================================
+  internal-api:
+    build: ./internal-api
+    container_name: CloudFragment-metadata
+    networks:
+      - internal_net
+    environment:
+      - USER_FLAG=d8ea1ee67784b6d36f9a901dfc6fbf70
+      - SERVICE_NAME=ops-metadata
+    restart: unless-stopped
+
+  # ============================================================================
+  # SECRETS VAULT (holds ROOT flag)
+  # ============================================================================
+  secrets-vault:
+    build: ./secrets-vault
+    container_name: CloudFragment-secrets
+    networks:
+      - internal_net
+    environment:
+      - ROOT_FLAG=7ad0e1af0e577f564b1834bf5c8649a2
+      - VALID_TOKEN_FILE=/app/expected-token
+    volumes:
+      - ./sa-token/token:/app/expected-token:ro
+    restart: unless-stopped
+
+  # ============================================================================
+  # INTERNAL DNS (restricted resolution)
+  # ============================================================================
+  internal-dns:
+    image: coredns/coredns:latest
+    container_name: CloudFragment-dns
+    networks:
+      - app_net
+      - internal_net
+    volumes:
+      - ./coredns/Corefile:/etc/coredns/Corefile:ro
+    command: [ "-conf", "/etc/coredns/Corefile" ]
+    restart: unless-stopped
