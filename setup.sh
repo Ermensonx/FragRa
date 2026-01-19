@@ -17,7 +17,7 @@ NC='\033[0m'
 
 # Configuration
 MACHINE_NAME="cloudfragment"
-DOMAIN="${MACHINE_NAME}.htb"
+SERVER_IP="72.60.148.4"
 USER_FLAG="d8ea1ee67784b6d36f9a901dfc6fbf70"
 ROOT_FLAG="7ad0e1af0e577f564b1834bf5c8649a2"
 CTF_USER="node"
@@ -93,24 +93,10 @@ configure_system() {
 }
 
 # ============================================================================
-# CONFIGURE /etc/hosts (DNS LOCAL)
+# CONFIGURE /etc/hosts (OPTIONAL - SKIP IF USING IP ONLY)
 # ============================================================================
 configure_hosts() {
-    log "Configurando DNS local (/etc/hosts)..."
-
-    # Backup original
-    if [[ ! -f /etc/hosts.backup ]]; then
-        cp /etc/hosts /etc/hosts.backup
-    fi
-
-    # Remove old entries first
-    sed -i "/$DOMAIN/d" /etc/hosts 2>/dev/null || true
-
-    # Add domain entries
-    echo "127.0.0.1   $DOMAIN $MACHINE_NAME" >> /etc/hosts
-    log "Adicionado: 127.0.0.1 → $DOMAIN"
-
-    log "DNS local configurado"
+    log "Configuração de DNS local ignorada (usando IP direto: $SERVER_IP)"
 }
 
 # ============================================================================
@@ -419,14 +405,6 @@ verify_setup() {
     else
         echo -e "  HTTP 72.60.148.4:    ${YELLOW}HTTP $HTTP_CODE${NC}"
     fi
-
-    # Test domain
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://$DOMAIN/health" 2>/dev/null || echo "000")
-    if [[ "$HTTP_CODE" == "200" ]]; then
-        echo -e "  HTTP $DOMAIN: ${GREEN}OK (200)${NC}"
-    else
-        echo -e "  HTTP $DOMAIN: ${YELLOW}HTTP $HTTP_CODE${NC}"
-    fi
 }
 
 # ============================================================================
@@ -439,7 +417,6 @@ show_final() {
 ╠═══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
 ║  🌐 Acesse no navegador:                                          ║
-║     → http://cloudfragment.htb                                    ║
 ║     → http://72.60.148.4                                          ║
 ║                                                                   ║
 ║  📁 Arquivos:                                                     ║
@@ -451,7 +428,7 @@ show_final() {
 ║     → ctf-reset     - Resetar containers                          ║
 ║                                                                   ║
 ║  🔓 Exploit:                                                       ║
-║     → python3 react2shell.py -u http://cloudfragment.htb          ║
+║     → python3 react2shell.py -u http://72.60.148.4                ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
 "
