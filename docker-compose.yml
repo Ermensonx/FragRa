@@ -24,14 +24,13 @@ networks:
 
 services:
   # ============================================================================
-  # EDGE WAF - Cloudflare-like behavior
+  # EDGE WAF - EdgeShield Web Application Firewall
   # ============================================================================
   edge-waf:
     build: ./edge-waf
     container_name: CloudFragment-edge
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - ./edge-waf/certs:/etc/nginx/certs:ro
     networks:
