@@ -82,15 +82,9 @@ is_container_healthy() {
 }
 
 check_process_in_container() {
-    local container="$1"
-    local process="${CONTAINER_PROCESSES[$container]}"
-    
-    if [[ -z "$process" ]]; then
-        return 0  # No process defined, skip check
-    fi
-    
-    # Use docker top which works on any container (no ps required inside)
-    docker top "$container" 2>/dev/null | grep -qi "$process"
+    # DISABLED: Container running check is sufficient
+    # Docker ensures main process is running if container is up
+    return 0
 }
 
 get_container_cpu() {
