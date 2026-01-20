@@ -25,7 +25,6 @@ networks:
 services:
   # ============================================================================
   # EDGE WAF - EdgeShield Web Application Firewall
-  # Optimized for 90+ concurrent CTF players
   # ============================================================================
   edge-waf:
     build: ./edge-waf
@@ -44,26 +43,14 @@ services:
       - UPSTREAM_HOST=nginx-proxy
       - UPSTREAM_PORT=8080
     restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 512M
-        reservations:
-          cpus: '0.5'
-          memory: 128M
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
-    ulimits:
-      nofile:
-        soft: 65535
-        hard: 65535
 
   # ============================================================================
-  # NGINX REVERSE PROXY - Optimized for high load
+  # NGINX REVERSE PROXY
   # ============================================================================
   nginx-proxy:
     build: ./nginx-proxy
@@ -74,18 +61,6 @@ services:
     depends_on:
       - nextjs-app
     restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 256M
-        reservations:
-          cpus: '0.25'
-          memory: 64M
-    ulimits:
-      nofile:
-        soft: 65535
-        hard: 65535
 
   # ============================================================================
   # VULNERABLE NEXT.JS APPLICATION
