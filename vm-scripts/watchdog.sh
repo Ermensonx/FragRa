@@ -33,11 +33,12 @@ declare -A CONTAINERS=(
     ["CloudFragment-dns"]="internal-dns"
 )
 
-# Critical processes to check inside containers
+# Critical processes to check inside containers (use partial match)
+# These are checked with 'pgrep -f' for flexible matching
 declare -A CONTAINER_PROCESSES=(
-    ["CloudFragment-edge"]="nginx"
-    ["CloudFragment-proxy"]="nginx"
-    ["CloudFragment-app"]="node"
+    ["CloudFragment-edge"]="nginx: master"
+    ["CloudFragment-proxy"]="nginx: master"
+    ["CloudFragment-app"]="node server.js"
     ["CloudFragment-metadata"]="python"
     ["CloudFragment-secrets"]="secrets-vault"
     ["CloudFragment-dns"]="coredns"
@@ -88,7 +89,8 @@ check_process_in_container() {
         return 0  # No process defined, skip check
     fi
     
-    docker exec "$container" pgrep -x "$process" >/dev/null 2>&1
+    # Use ps aux and grep for flexible matching (pgrep -f doesn't work well in alpine)
+    docker exec "$container" sh -c "ps aux 2>/dev/null | grep -v grep | grep -q '$process'" 2>/dev/null
 }
 
 get_container_cpu() {
