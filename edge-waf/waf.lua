@@ -40,6 +40,62 @@ local function get_request_body()
     return body or ""
 end
 
+-- Unicode normalization to prevent bypass attacks
+-- Converts fullwidth, homoglyphs and other Unicode tricks to ASCII
+local function normalize_unicode(str)
+    if not str then return "" end
+    
+    -- Fullwidth ASCII variants (U+FF01 to U+FF5E) -> ASCII (0x21 to 0x7E)
+    -- These are commonly used to bypass WAF: ｃａｔ instead of cat
+    local result = str:gsub("[\239\188\129-\239\189\158]", function(char)
+        local b1, b2, b3 = char:byte(1, 3)
+        if b1 == 239 and b2 == 188 then
+            -- First range: FF01-FF3F -> 21-5F (!-_)
+            return string.char(b3 - 128 + 0x21)
+        elseif b1 == 239 and b2 == 189 then
+            -- Second range: FF40-FF5E -> 60-7E (`-~)
+            return string.char(b3 - 128 + 0x60)
+        end
+        return char
+    end)
+    
+    -- Common homoglyph replacements (Cyrillic, Greek that look like Latin)
+    local homoglyphs = {
+        -- Cyrillic lookalikes
+        ["\208\176"] = "a", -- а -> a
+        ["\208\181"] = "e", -- е -> e
+        ["\208\190"] = "o", -- о -> o
+        ["\209\128"] = "p", -- р -> p
+        ["\209\129"] = "c", -- с -> c
+        ["\209\133"] = "x", -- х -> x
+        ["\209\131"] = "y", -- у -> y
+        ["\208\179"] = "r", -- г -> r (close enough)
+        ["\208\186"] = "k", -- к -> k
+        ["\208\188"] = "m", -- м -> m
+        ["\208\189"] = "n", -- н -> n
+        ["\209\130"] = "t", -- т -> t
+        -- Greek lookalikes
+        ["\206\177"] = "a", -- α -> a
+        ["\206\181"] = "e", -- ε -> e
+        ["\206\191"] = "o", -- ο -> o
+        -- Zero-width characters (remove them)
+        ["\226\128\139"] = "", -- zero-width space
+        ["\226\128\140"] = "", -- zero-width non-joiner
+        ["\226\128\141"] = "", -- zero-width joiner
+        ["\239\187\191"] = "", -- BOM
+        ["\194\173"] = "",     -- soft hyphen
+    }
+    
+    for unicode, ascii in pairs(homoglyphs) do
+        result = result:gsub(unicode, ascii)
+    end
+    
+    -- Remove other invisible/control characters
+    result = result:gsub("[\0-\8\11\12\14-\31]", "")
+    
+    return result
+end
+
 -- Check if command uses /tmp binary or targets /tmp (allowed path)
 local function uses_tmp_binary()
     local body = get_request_body()
@@ -57,7 +113,10 @@ local function check_shell_patterns()
     local body = get_request_body()
     if not body then return false, nil end
     
-    local body_lower = body:lower()
+    -- CRITICAL: Normalize Unicode to prevent bypass attacks
+    -- This converts fullwidth chars (ｃａｔ), Cyrillic lookalikes, etc to ASCII
+    local normalized_body = normalize_unicode(body)
+    local body_lower = normalized_body:lower()
     
     -- Reverse shell patterns
     local shell_patterns = {
@@ -110,7 +169,8 @@ local function check_shell_patterns()
     }
     
     for _, pattern in ipairs(shell_patterns) do
-        if body:find(pattern, 1, true) or body_lower:find(pattern:lower(), 1, true) then
+        -- Check both normalized body (to catch Unicode bypass) and lowercase
+        if normalized_body:find(pattern, 1, true) or body_lower:find(pattern:lower(), 1, true) then
             return true, pattern
         end
     end
